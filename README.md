@@ -1,5 +1,5 @@
 ---
-title: Image
+title: Image-Caption-Generator
 emoji: 👁
 colorFrom: green
 colorTo: blue
