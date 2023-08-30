@@ -1,7 +1,7 @@
 import sqlite3
 import streamlit as st
 from PIL import Image
-import tenserflow as tf
+import tensorflow as tf
 from model import get_caption_model, generate_caption
 from googletrans import Translator
 import requests
