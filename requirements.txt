@@ -9,4 +9,4 @@ tensorflow
 altair
 protobuf==3.20
 googletrans==4.0.0-rc1
-sqlite3
+
