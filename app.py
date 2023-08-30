@@ -1,19 +1,22 @@
-import sqlite3
 import io
 import os
 import streamlit as st
+import requests
 from PIL import Image
-import tensorflow as tf
-import numpy as np
 from model import get_caption_model, generate_caption
 from googletrans import Translator
-import requests
+import sqlite3
 
 # Initialize Streamlit app
 st.set_page_config(page_title="Image Caption Generator", layout="wide")
 
-# Initialize Translator
 translator = Translator()
+
+@st.cache_resource
+def get_model():
+    return get_caption_model()
+
+caption_model = get_model()
 
 # Constants
 SIGNUP_SUCCESS_MSG = "Signup successful! You can now login."
@@ -39,7 +42,7 @@ def create_table():
                 role TEXT NOT NULL
             )
         ''')
-
+        
 # Function for signup section
 def signup_section():
 
@@ -93,24 +96,28 @@ def login_section():
             else:
                 st.error(LOGIN_ERROR_INVALID_CREDENTIALS)
         except sqlite3.OperationalError as e:
-            st.error(f"An error occurred while trying to log in: {e}")
+            st.error(f"An error occurred while trying to log in: {e}")            
+        
+
 
 def predict(cap_col):
     captions = []
-    pred_caption = generate_caption('tmp.jpg', get_caption_model)
+    pred_caption = generate_caption('tmp.jpg', caption_model)
 
     cap_col.markdown('#### Predicted Captions:')
     captions.append(pred_caption)
 
     for _ in range(4):
-        pred_caption = generate_caption('tmp.jpg',get_caption_model, add_noise=True)
+        pred_caption = generate_caption('tmp.jpg', caption_model, add_noise=True)
         if pred_caption not in captions:
             captions.append(pred_caption)
     
     cap_col.markdown('<div class="caption-container">', unsafe_allow_html=True)
     for c in captions:
         cap_col.markdown(f'<div class="cap-line" style="color: black; background-color: light grey; padding: 5px; margin-bottom: 5px; font-family: \'Palatino Linotype\', \'Book Antiqua\', Palatino, serif;">{c}</div>', unsafe_allow_html=True)
-    cap_col.markdown('</div>', unsafe_allow_html=True)            
+    cap_col.markdown('</div>', unsafe_allow_html=True)
+    
+    
 
 def main():
     # Create the database table if it doesn't exist
@@ -139,8 +146,7 @@ def main():
                 img_url = st.text_input("Enter Image URL:")
                 img_upload = st.file_uploader("Upload Image:", type=['jpg', 'png', 'jpeg'])
 
-            col1, col2 = st.columns([2, 3])
-
+            col1, col2 = st.columns(2)
             if img_url or img_upload:
                 if img_url:
                     img = Image.open(requests.get(img_url, stream=True).raw)
@@ -184,5 +190,11 @@ def main():
         else:
             st.write("Please login to access this feature.")
 
+    # Remove temporary image file
+    if img_url or img_upload:
+    os.remove('tmp.jpg')        
+
 if __name__ == "__main__":
     main() 
+
+
