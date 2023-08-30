@@ -145,8 +145,7 @@ def main():
                             display_edit_caption(selected_languages, generated_caption)
                         else:
                             st.sidebar.error("Caption generation failed.")
-            else:
-                generate_image_caption()
+            
 
         else:
             st.write("Please login to access this feature.")
