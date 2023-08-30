@@ -192,7 +192,7 @@ def main():
 
     # Remove temporary image file
     if img_url or img_upload:
-    os.remove('tmp.jpg')        
+       os.remove('tmp.jpg')        
 
 if __name__ == "__main__":
     main() 
