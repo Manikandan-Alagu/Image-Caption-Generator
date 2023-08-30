@@ -162,7 +162,7 @@ def main():
 
                 if "en" in selected_languages:
                         st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>Edit Caption:</p>", unsafe_allow_html=True)
-                        edited_caption = st.text_area("Edit the caption", value=generated_caption)
+                        edited_caption = st.text_area("Edit the caption", value=predict)
 
                         if edited_caption:
                             st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>Edited Caption:</p>", unsafe_allow_html=True)
