@@ -22,7 +22,7 @@ heading_style = "font-size: 24px; font-weight: bold; text-align: center;"
 input_style = "margin-top: 10px; padding: 5px; width: 100%;"
 
 # Function to create the SQLite table if it doesn't exist
-@st.cache(allow_output_mutation=True)
+@st.cache_resource
 def create_table():
     with sqlite3.connect("login.db") as conn:
         cursor = conn.cursor()
@@ -38,13 +38,13 @@ def create_table():
 
 # Function for signup section
 def signup_section():
-    st.title("Signup")
+
     st.markdown(f"<p style='{heading_style}'>Signup</p>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'>Please fill in the details to sign up:</p>", unsafe_allow_html=True)
 
-    new_username = st.text_input("New Username", key="new_username", style=input_style, help="Choose a unique username")
-    new_password = st.text_input("New Password", type="password", key="new_password", style=input_style, help="Password should be at least 8 characters long")
-    new_email = st.text_input("Email", key="new_email", style=input_style, help="Enter a valid email address")
+    new_username = st.text_input("New Username", key="new_username", help="Choose a unique username")
+    new_password = st.text_input("New Password", type="password", key="new_password",  help="Password should be at least 8 characters long")
+    new_email = st.text_input("Email", key="new_email", help="Enter a valid email address")
 
     if st.button("Signup", style="margin-top: 10px;"):
         if not new_username or not new_password or not new_email:
@@ -65,12 +65,12 @@ def signup_section():
 
 # Function for login section
 def login_section():
-    st.title("Login")
+    
     st.markdown(f"<p style='{heading_style}'>Login</p>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'>Please enter your login details:</p>", unsafe_allow_html=True)
 
-    username = st.text_input("Username", key="login_username", style=input_style, help="Enter your username")
-    password = st.text_input("Password", type="password", key="login_password", style=input_style, help="Enter your password")
+    username = st.text_input("Username", key="login_username", help="Enter your username")
+    password = st.text_input("Password", type="password", key="login_password",help="Enter your password")
 
     if st.button("Login", style="margin-top: 10px;"):
         if not username or not password:
