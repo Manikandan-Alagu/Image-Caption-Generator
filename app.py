@@ -1,6 +1,5 @@
 import sqlite3
 import streamlit as st
-from passlib.hash import bcrypt
 from PIL import Image
 from model import get_caption_model, generate_caption
 from googletrans import Translator
@@ -12,8 +11,18 @@ st.set_page_config(page_title="Image Caption Generator", layout="wide")
 # Initialize Translator
 translator = Translator()
 
+# Constants
+SIGNUP_SUCCESS_MSG = "Signup successful! You can now login."
+SIGNUP_ERROR_EXISTING_USER = "Username already exists. Please choose a different username."
+LOGIN_SUCCESS_MSG = "Login successful!"
+LOGIN_ERROR_INVALID_CREDENTIALS = "Login failed. Invalid username or password."
+
+# Define CSS styles
+heading_style = "font-size: 24px; font-weight: bold; text-align: center;"
+input_style = "margin-top: 10px; padding: 5px; width: 100%;"
+
 # Function to create the SQLite table if it doesn't exist
-@st.cache_resource
+@st.cache(allow_output_mutation=True)
 def create_table():
     with sqlite3.connect("login.db") as conn:
         cursor = conn.cursor()
@@ -27,41 +36,43 @@ def create_table():
             )
         ''')
 
-# Function to handle user signup
-def signup():
-    st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px; text-align: center;'>Signup</p>", unsafe_allow_html=True)
+# Function for signup section
+def signup_section():
+    st.title("Signup")
+    st.markdown(f"<p style='{heading_style}'>Signup</p>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'>Please fill in the details to sign up:</p>", unsafe_allow_html=True)
-    
-    new_username = st.text_input("New Username")
-    new_password = st.text_input("New Password", type="password")
-    new_email = st.text_input("Email")
 
-    if st.button("Signup"):
+    new_username = st.text_input("New Username", key="new_username", style=input_style, help="Choose a unique username")
+    new_password = st.text_input("New Password", type="password", key="new_password", style=input_style, help="Password should be at least 8 characters long")
+    new_email = st.text_input("Email", key="new_email", style=input_style, help="Enter a valid email address")
+
+    if st.button("Signup", style="margin-top: 10px;"):
         if not new_username or not new_password or not new_email:
             st.error("All fields are required for signup.")
             return
 
         role = "user"
-        hashed_password = new_password
 
         try:
             with sqlite3.connect("login.db") as conn:
                 cursor = conn.cursor()
                 cursor.execute("INSERT INTO users (username, password, email, role) VALUES (?, ?, ?, ?)",
-                               (new_username, hashed_password, new_email, role))
-            st.success("Signup successful! You can now login.")
+                               (new_username, new_password, new_email, role))
+            st.success(SIGNUP_SUCCESS_MSG)
+            st.balloons()
         except sqlite3.IntegrityError:
-            st.error("Username already exists. Please choose a different username.")
+            st.error(SIGNUP_ERROR_EXISTING_USER)
 
-# Function to handle user login
-def login():
-    st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px; text-align: center;'>Login</p>", unsafe_allow_html=True)
+# Function for login section
+def login_section():
+    st.title("Login")
+    st.markdown(f"<p style='{heading_style}'>Login</p>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'>Please enter your login details:</p>", unsafe_allow_html=True)
-    
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
 
-    if st.button("Login"):
+    username = st.text_input("Username", key="login_username", style=input_style, help="Enter your username")
+    password = st.text_input("Password", type="password", key="login_password", style=input_style, help="Enter your password")
+
+    if st.button("Login", style="margin-top: 10px;"):
         if not username or not password:
             st.error("Username and password are required for login.")
             return
@@ -72,81 +83,89 @@ def login():
                 cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
                 user = cursor.fetchone()
 
-            if user and password:
-                st.success("Login successful!")
+            if user and user[2] == password:
+                st.success(LOGIN_SUCCESS_MSG)
                 st.write(f"You are logged in as: {user[1]}")
+                st.image("profile_image_placeholder.jpg", caption="Your Profile Image", width=100)
+
                 st.session_state.username = username
                 st.session_state.selected_tab = "Generate Caption"
+                st.balloons()
             else:
-                st.error("Login failed. Invalid username or password.")
+                st.error(LOGIN_ERROR_INVALID_CREDENTIALS)
         except sqlite3.OperationalError as e:
             st.error(f"An error occurred while trying to log in: {e}")
 
-# Function to generate image caption and edit captions
-@st.cache_resource
-def generate_image_caption(img, caption_model):
-    return generate_caption(img, caption_model)
-
-def display_edit_caption(selected_languages, generated_caption):
-    st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>Edit Caption:</p>", unsafe_allow_html=True)
-    edited_caption = st.text_area("Edit the caption", value=generated_caption, key="edited_caption")
-
-    if edited_caption:
-        st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>Edited Caption:</p>", unsafe_allow_html=True)
-        st.write(edited_caption)
-
-        for lang in selected_languages:
-            if lang != "en":
-                translated_caption = translator.translate(edited_caption, src="en", dest=lang)
-                st.markdown(f"<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>{lang.upper()} Translation:</p>", unsafe_allow_html=True)
-                st.write(translated_caption.text)
-
-        username = st.session_state.username
-        st.balloons()
-        st.success("Caption editing complete!")
-
-# Main function to control the application flow
 def main():
+    # Create the database table if it doesn't exist
     create_table()
 
+    # Define the navigation tabs
     tabs = ["Signup", "Login", "Generate Caption"]
+
+    # Select the active tab based on user input
     selected_tab = st.sidebar.selectbox("Navigation", tabs)
 
+    # Route to the appropriate section based on the selected tab
     if selected_tab == "Signup":
-        signup()
+        signup_section()
     elif selected_tab == "Login":
-        login()
+        login_section()
     elif selected_tab == "Generate Caption":
+        # Check if a user is logged in before accessing the caption generation feature
         if hasattr(st.session_state, "username"):
-            st.sidebar.info("Welcome to the Image Caption Generator!")
-            st.sidebar.warning("Be sure to upload a clear and relevant image.")
-            generate_caption_button = st.sidebar.button("Generate Caption")
-            
-            if generate_caption_button:
-                st.sidebar.info("Generating caption... Please wait.")
-                
-                with st.spinner("Generating caption..."):
-                    img_url = st.sidebar.text_input("Enter Image URL:")
-                    img_upload = st.sidebar.file_uploader("Upload Image:", type=['jpg', 'png', 'jpeg'])
+            st.title("Generate Caption")
+            st.markdown("Upload an image to generate a caption:")
 
-                    if img_url or img_upload:
-                        if img_url:
-                            img = Image.open(requests.get(img_url, stream=True).raw)
-                        else:
-                            img = Image.open(img_upload)
+            with st.sidebar:
+                st.title("Options")
+                selected_languages = st.multiselect("Select languages for translation:", ['en', 'ta', 'hi', 'zh-cn', 'es', 'fr', 'de', 'it', 'ja'])
+                img_url = st.text_input("Enter Image URL:")
+                img_upload = st.file_uploader("Upload Image:", type=['jpg', 'png', 'jpeg'])
 
-                        img = img.convert('RGB')
-                        caption_model = get_caption_model()
-                        generated_caption = generate_image_caption(img, caption_model)
+            col1, col2 = st.columns([2, 3])
 
-                        if generated_caption:
-                            st.sidebar.success("Caption generated successfully!")
-                            selected_languages = st.sidebar.multiselect("Select languages for translation:", ['en', 'ta', 'hi', 'zh-cn', 'es', 'fr', 'de', 'it', 'ja'])
-                            display_edit_caption(selected_languages, generated_caption)
-                        else:
-                            st.sidebar.error("Caption generation failed.")
-            
+            if img_url or img_upload:
+                if img_url:
+                    img = Image.open(requests.get(img_url, stream=True).raw)
+                else:
+                    img = Image.open(img_upload)
 
+                img = img.convert('RGB')
+                col1.image(img, caption="Input Image", use_column_width=True)
+
+                caption_model = get_caption_model()
+                generated_caption = generate_caption(img, caption_model)
+
+                if generated_caption:
+                    col2.markdown('<div style="margin-top: 15px; padding: 10px; background-color: #e6f7ff; border-radius: 5px;">' + generated_caption + '</div>', unsafe_allow_html=True)
+                else:
+                    col2.markdown('<div style="margin-top: 15px; padding: 10px; background-color: #e6f7ff; border-radius: 5px;">Caption generation failed.</div>', unsafe_allow_html=True)
+
+                if generated_caption:
+                    st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>Generated Caption:</p>", unsafe_allow_html=True)
+                    st.write(generated_caption)
+
+                    if "en" in selected_languages:
+                        st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>Edit Caption:</p>", unsafe_allow_html=True)
+                        edited_caption = st.text_area("Edit the caption", value=generated_caption)
+
+                        if edited_caption:
+                            st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>Edited Caption:</p>", unsafe_allow_html=True)
+                            st.write(edited_caption)
+
+                            for lang in selected_languages:
+                                if lang != "en":
+                                    translated_caption = translator.translate(edited_caption, src="en", dest=lang)
+                                    st.markdown(f"<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>{lang.upper()} Translation:</p>", unsafe_allow_html=True)
+                                    st.write(translated_caption.text)
+
+                            username = st.session_state.username
+                            update_caption(username, edited_caption)  # Update the caption in the database
+
+                            st.success("Caption updated and saved successfully!")
+                    else:
+                        st.info("Caption editing is only available for English language captions.")
         else:
             st.write("Please login to access this feature.")
 
