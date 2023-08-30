@@ -179,7 +179,7 @@ def main():
 
                             st.success("Caption updated and saved successfully!")
                             os.remove('tmp.jpg')
-                    else:
+                else:
                         st.info("Caption editing is only available for English language captions.")
         else:
             st.write("Please login to access this feature.")
