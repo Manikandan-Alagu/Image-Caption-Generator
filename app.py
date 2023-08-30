@@ -86,8 +86,6 @@ def login_section():
             if user and user[2] == password:
                 st.success(LOGIN_SUCCESS_MSG)
                 st.write(f"You are logged in as: {user[1]}")
-                st.image("image.jpg", caption="Your Profile Image", width=100)
-
                 st.session_state.username = username
                 st.session_state.selected_tab = "Generate Caption"
                 st.balloons()
