@@ -1,6 +1,7 @@
 import sqlite3
 import streamlit as st
 from PIL import Image
+import tenserflow as tf
 from model import get_caption_model, generate_caption
 from googletrans import Translator
 import requests
@@ -131,6 +132,9 @@ def main():
 
                 img = img.convert('RGB')
                 col1.image(img, caption="Input Image", use_column_width=True)
+
+                img_tensor = tf.convert_to_tensor(np.array(img), dtype=tf.uint8)
+                img_tensor = tf.image.resize(img_tensor, (224, 224))
 
                 caption_model = get_caption_model()
                 generated_caption = generate_caption(img, caption_model)
