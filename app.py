@@ -103,9 +103,9 @@ def predict(cap_col):
     captions.append(pred_caption)
 
     for _ in range(4):
-        pred_caption = generate_caption('tmp.jpg', caption_model, add_noise=True)
+        pred_caption = generate_caption('tmp.jpg',get_caption_model, add_noise=True)
         if pred_caption not in captions:
-            captions.append(pred_caption_caption)
+            captions.append(pred_caption)
     
     cap_col.markdown('<div class="caption-container">', unsafe_allow_html=True)
     for c in captions:
