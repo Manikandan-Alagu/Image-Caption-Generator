@@ -72,7 +72,7 @@ def login():
                 cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
                 user = cursor.fetchone()
 
-            if user and verify(password, user[2]):
+            if user and new_password:
                 st.success("Login successful!")
                 st.write(f"You are logged in as: {user[1]}")
                 st.session_state.username = username
