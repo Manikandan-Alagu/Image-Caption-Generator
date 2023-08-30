@@ -158,12 +158,12 @@ def main():
                 img.save('tmp.jpg')
                 predict(col2)
 
-                if generated_caption:
+                if predict:
                     col2.markdown('<div style="margin-top: 15px; padding: 10px; background-color: #e6f7ff; border-radius: 5px;">' + generated_caption + '</div>', unsafe_allow_html=True)
                 else:
                     col2.markdown('<div style="margin-top: 15px; padding: 10px; background-color: #e6f7ff; border-radius: 5px;">Caption generation failed.</div>', unsafe_allow_html=True)
 
-                if generated_caption:
+                if predict:
                     st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>Generated Caption:</p>", unsafe_allow_html=True)
                     st.write(generated_caption)
 
