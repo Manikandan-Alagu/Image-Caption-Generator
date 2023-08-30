@@ -46,7 +46,7 @@ def signup_section():
     new_password = st.text_input("New Password", type="password", key="new_password",  help="Password should be at least 8 characters long")
     new_email = st.text_input("Email", key="new_email", help="Enter a valid email address")
 
-    if st.button("Signup", style="margin-top: 10px;"):
+    if st.button("Signup"):
         if not new_username or not new_password or not new_email:
             st.error("All fields are required for signup.")
             return
@@ -72,7 +72,7 @@ def login_section():
     username = st.text_input("Username", key="login_username", help="Enter your username")
     password = st.text_input("Password", type="password", key="login_password",help="Enter your password")
 
-    if st.button("Login", style="margin-top: 10px;"):
+    if st.button("Login"):
         if not username or not password:
             st.error("Username and password are required for login.")
             return
