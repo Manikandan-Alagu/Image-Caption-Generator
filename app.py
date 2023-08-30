@@ -97,7 +97,7 @@ def login_section():
 
 def predict(cap_col):
     captions = []
-    pred_caption = generate_caption('tmp.jpg', caption_model)
+    pred_caption = generate_caption('tmp.jpg', get_caption_model)
 
     cap_col.markdown('#### Predicted Captions:')
     captions.append(pred_caption)
