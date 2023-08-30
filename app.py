@@ -1,4 +1,6 @@
 import sqlite3
+import io
+import os
 import streamlit as st
 from PIL import Image
 import tensorflow as tf
@@ -93,6 +95,23 @@ def login_section():
         except sqlite3.OperationalError as e:
             st.error(f"An error occurred while trying to log in: {e}")
 
+def predict(cap_col):
+    captions = []
+    pred_caption = generate_caption('tmp.jpg', caption_model)
+
+    cap_col.markdown('#### Predicted Captions:')
+    captions.append(pred_caption)
+
+    for _ in range(4):
+        pred_caption = generate_caption('tmp.jpg', caption_model, add_noise=True)
+        if pred_caption not in captions:
+            captions.append(pred_caption_caption)
+    
+    cap_col.markdown('<div class="caption-container">', unsafe_allow_html=True)
+    for c in captions:
+        cap_col.markdown(f'<div class="cap-line" style="color: black; background-color: light grey; padding: 5px; margin-bottom: 5px; font-family: \'Palatino Linotype\', \'Book Antiqua\', Palatino, serif;">{c}</div>', unsafe_allow_html=True)
+    cap_col.markdown('</div>', unsafe_allow_html=True)            
+
 def main():
     # Create the database table if it doesn't exist
     create_table()
@@ -130,12 +149,8 @@ def main():
 
                 img = img.convert('RGB')
                 col1.image(img, caption="Input Image", use_column_width=True)
-
-                img_tensor = tf.convert_to_tensor(np.array(img), dtype=tf.uint8)
-                img_tensor = tf.image.resize(img_tensor, (224, 224))
-
-                caption_model = get_caption_model()
-                generated_caption = generate_caption(img, caption_model)
+                img.save('tmp.jpg')
+                predict(col2)
 
                 if generated_caption:
                     col2.markdown('<div style="margin-top: 15px; padding: 10px; background-color: #e6f7ff; border-radius: 5px;">' + generated_caption + '</div>', unsafe_allow_html=True)
