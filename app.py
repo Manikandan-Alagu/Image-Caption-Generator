@@ -29,7 +29,6 @@ def create_table():
 
 # Function to handle user signup
 def signup():
-    st.title("Signup")
     st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px; text-align: center;'>Signup</p>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'>Please fill in the details to sign up:</p>", unsafe_allow_html=True)
     
@@ -37,7 +36,7 @@ def signup():
     new_password = st.text_input("New Password", type="password")
     new_email = st.text_input("Email")
 
-    if st.button("Signup", style='margin-top: 10px;'):
+    if st.button("Signup"):
         if not new_username or not new_password or not new_email:
             st.error("All fields are required for signup.")
             return
@@ -56,14 +55,13 @@ def signup():
 
 # Function to handle user login
 def login():
-    st.title("Login")
     st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px; text-align: center;'>Login</p>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'>Please enter your login details:</p>", unsafe_allow_html=True)
     
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
-    if st.button("Login", style='margin-top: 10px;'):
+    if st.button("Login"):
         if not username or not password:
             st.error("Username and password are required for login.")
             return
