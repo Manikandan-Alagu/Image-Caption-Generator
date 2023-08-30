@@ -165,7 +165,7 @@ def main():
 
                 if predict:
                     st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>Generated Caption:</p>", unsafe_allow_html=True)
-                    st.write(generated_caption)
+                    st.write(predict)
 
                     if "en" in selected_languages:
                         st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>Edit Caption:</p>", unsafe_allow_html=True)
