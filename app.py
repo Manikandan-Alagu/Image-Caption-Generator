@@ -42,7 +42,7 @@ def signup():
             return
 
         role = "user"
-        hashed_password = bcrypt.hash(new_password)
+        hashed_password = new_password
 
         try:
             with sqlite3.connect("login.db") as conn:
@@ -72,7 +72,7 @@ def login():
                 cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
                 user = cursor.fetchone()
 
-            if user and bcrypt.verify(password, user[2]):
+            if user and verify(password, user[2]):
                 st.success("Login successful!")
                 st.write(f"You are logged in as: {user[1]}")
                 st.session_state.username = username
