@@ -143,7 +143,7 @@ def main():
                 img_upload = st.file_uploader("Upload Image:", type=['jpg', 'png', 'jpeg'])
 
             col1, col2 = st.columns(2)
-            if img_url or img_upload:
+            if img_upload or img_url:
                 if img_url:
                     img = Image.open(requests.get(img_url, stream=True).raw)
                 else:
