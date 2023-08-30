@@ -42,7 +42,6 @@ def create_table():
 def signup_section():
 
     st.markdown(f"<p style='{heading_style}'>Signup</p>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>Please fill in the details to sign up:</p>", unsafe_allow_html=True)
 
     new_username = st.text_input("New Username", key="new_username", help="Choose a unique username")
     new_password = st.text_input("New Password", type="password", key="new_password",  help="Password should be at least 8 characters long")
@@ -69,8 +68,6 @@ def signup_section():
 def login_section():
     
     st.markdown(f"<p style='{heading_style}'>Login</p>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>Please enter your login details:</p>", unsafe_allow_html=True)
-
     username = st.text_input("Username", key="login_username", help="Enter your username")
     password = st.text_input("Password", type="password", key="login_password",help="Enter your password")
 
@@ -114,7 +111,7 @@ def main():
     elif selected_tab == "Generate Caption":
         # Check if a user is logged in before accessing the caption generation feature
         if hasattr(st.session_state, "username"):
-            st.title("Generate Caption")
+            st.markdown(f"<p style='{heading_style}'>Generate Caption</p>", unsafe_allow_html=True)
             st.markdown("Upload an image to generate a caption:")
 
             with st.sidebar:
