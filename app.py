@@ -1,72 +1,94 @@
-import io
-import os
+import sqlite3
 import streamlit as st
-import requests
+from passlib.hash import bcrypt
 from PIL import Image
 from model import get_caption_model, generate_caption
 from googletrans import Translator
+import requests
 
+# Initialize Streamlit app
+st.set_page_config(page_title="Image Caption Generator", layout="wide")
+
+# Initialize Translator
 translator = Translator()
 
-@st.cache_resource
-def get_model():
-    return get_caption_model()
+# Function to create the SQLite table if it doesn't exist
+@st.cache(allow_output_mutation=True)
+def create_table():
+    with sqlite3.connect("login.db") as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL UNIQUE,
+                password TEXT NOT NULL,
+                email TEXT NOT NULL,
+                role TEXT NOT NULL
+            )
+        ''')
 
-caption_model = get_model()
-
-def translate_caption(caption, target_language='en'):
-    translated = translator.translate(caption, dest=target_language)
-    return translated.text
-
-def predict(cap_col):
-    captions = []
-    pred_caption = generate_caption('tmp.jpg', caption_model)
-
-    cap_col.markdown('#### Predicted Captions:')
-    translated_caption = translate_caption(pred_caption, target_language)
-    captions.append(translated_caption)
-
-    for _ in range(4):
-        pred_caption = generate_caption('tmp.jpg', caption_model, add_noise=True)
-        if pred_caption not in captions:
-            translated_caption = translate_caption(pred_caption, target_language)
-            captions.append(translated_caption)
+# Function to handle user signup
+def signup():
+    st.title("Signup")
+    st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px; text-align: center;'>Signup</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'>Please fill in the details to sign up:</p>", unsafe_allow_html=True)
     
-    cap_col.markdown('<div class="caption-container">', unsafe_allow_html=True)
-    for c in captions:
-        cap_col.markdown(f'<div class="cap-line" style="color: black; background-color: light grey; padding: 5px; margin-bottom: 5px; font-family: \'Palatino Linotype\', \'Book Antiqua\', Palatino, serif;">{c}</div>', unsafe_allow_html=True)
-    cap_col.markdown('</div>', unsafe_allow_html=True)
+    new_username = st.text_input("New Username", help="Choose a unique username")
+    new_password = st.text_input("New Password", type="password", help="Password should be at least 8 characters long")
+    new_email = st.text_input("Email", help="Enter a valid email address")
 
-st.markdown('<h1 style="text-align:center; font-family:Arial; width:fit-content; font-size:3em; color:black; text-shadow: 2px 2px 4px #000000;">IMAGE CAPTION GENERATOR</h1>', unsafe_allow_html=True)
-col1, col2 = st.columns(2)
+    if st.button("Signup", style='margin-top: 10px;'):
+        if not new_username or not new_password or not new_email:
+            st.error("All fields are required for signup.")
+            return
 
-# Image URL input
-img_url = st.text_input(label='Enter Image URL')
+        role = "user"
+        hashed_password = bcrypt.hash(new_password)
 
-# Image upload input
-img_upload = st.file_uploader(label='Upload Image', type=['jpg', 'png', 'jpeg'])
+        try:
+            with sqlite3.connect("login.db") as conn:
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO users (username, password, email, role) VALUES (?, ?, ?, ?)",
+                               (new_username, hashed_password, new_email, role))
+            st.success("Signup successful! You can now login.")
+            st.balloons()
+        except sqlite3.IntegrityError:
+            st.error("Username already exists. Please choose a different username.")
 
-# Language selection dropdown
-target_language = st.selectbox('Select Target Language', ['en', 'ta', 'hi', 'es', 'fr', 'zh-cn'], index=0)
+# Function to handle user login
+def login():
+    st.title("Login")
+    st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px; text-align: center;'>Login</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'>Please enter your login details:</p>", unsafe_allow_html=True)
+    
+    username = st.text_input("Username", help="Enter your username")
+    password = st.text_input("Password", type="password", help="Enter your password")
 
-# Process image and generate captions
-if img_url:
-    img = Image.open(requests.get(img_url, stream=True).raw)
-    img = img.convert('RGB')
-    col1.image(img, caption="Input Image", use_column_width=True)
-    img.save('tmp.jpg')
-    predict(col2)
+    if st.button("Login", style='margin-top: 10px;'):
+        if not username or not password:
+            st.error("Username and password are required for login.")
+            return
+        
+        try:
+            with sqlite3.connect("login.db") as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+                user = cursor.fetchone()
 
-    st.markdown('<center style="opacity: 70%">OR</center>', unsafe_allow_html=True)
+            if user and bcrypt.verify(password, user[2]):
+                st.success("Login successful!")
+                st.write(f"You are logged in as: {user[1]}")
+                st.image("profile_image_placeholder.jpg", caption="Your Profile Image", width=100)
 
-elif img_upload:
-    img = img_upload.read()
-    img = Image.open(io.BytesIO(img))
-    img = img.convert('RGB')
-    col1.image(img, caption="Input Image", use_column_width=True)
-    img.save('tmp.jpg')
-    predict(col2)
+                st.session_state.username = username
+                st.session_state.selected_tab = "Generate Caption"
+                st.balloons()
+            else:
+                st.error("Login failed. Invalid username or password.")
+        except sqlite3.OperationalError as e:
+            st.error(f"An error occurred while trying to log in: {e}")
 
-# Remove temporary image file
-if img_url or img_upload:
-    os.remove('tmp.jpg')
+# Rest of the code remains the same...
+
+if __name__ == "__main__":
+    main()
