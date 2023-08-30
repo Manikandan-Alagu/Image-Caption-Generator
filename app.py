@@ -159,7 +159,7 @@ def main():
                 predict(col2)
 
                 if predict:
-                    col2.markdown('<div style="margin-top: 15px; padding: 10px; background-color: #e6f7ff; border-radius: 5px;">' + generated_caption + '</div>', unsafe_allow_html=True)
+                    col2.markdown('<div style="margin-top: 15px; padding: 10px; background-color: #e6f7ff; border-radius: 5px;">' + predict + '</div>', unsafe_allow_html=True)
                 else:
                     col2.markdown('<div style="margin-top: 15px; padding: 10px; background-color: #e6f7ff; border-radius: 5px;">Caption generation failed.</div>', unsafe_allow_html=True)
 
