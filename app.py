@@ -75,8 +75,6 @@ def login():
             if user and bcrypt.verify(password, user[2]):
                 st.success("Login successful!")
                 st.write(f"You are logged in as: {user[1]}")
-                st.image("profile_image_placeholder.jpg", caption="Your Profile Image", width=100)
-
                 st.session_state.username = username
                 st.session_state.selected_tab = "Generate Caption"
             else:
