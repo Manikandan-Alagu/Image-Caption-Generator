@@ -101,7 +101,7 @@ def login_section():
             st.error(f"An error occurred while trying to log in: {e}")            
         
 
-def translate_caption(caption, target_language='en'):
+def translate_caption(caption, target_language):
     translated = translator.translate(caption, dest=target_language)
     return translated.text
     
