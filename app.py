@@ -120,7 +120,7 @@ def predict(cap_col, target_language):
     cap_col.markdown('</div>', unsafe_allow_html=True)
 
 def generate_caption_section():
-    st.markdown('<h1 style="text-align:center; font-family:Arial; width:fit-content; font-size:3em; color:black; text-shadow: 2px 2px 4px #000000;">IMAGE CAPTION GENERATOR</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 style="text-align:center; font-family:Comic sans; width:fit-content; font-size:2em; color:black; text-shadow: 1px 2px 3px #000000;">IMAGE CAPTION GENERATOR</h1>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
 
     # Image URL input
