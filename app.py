@@ -18,9 +18,7 @@ def get_model():
 
 caption_model = get_model()
 
-def translate_caption(caption, target_language='en'):
-    translated = translator.translate(caption, dest=target_language)
-    return translated.text
+
 
 # Constants
 SIGNUP_SUCCESS_MSG = "Signup successful! You can now login."
@@ -103,7 +101,10 @@ def login_section():
             st.error(f"An error occurred while trying to log in: {e}")            
         
 
-
+def translate_caption(caption, target_language='en'):
+    translated = translator.translate(caption, dest=target_language)
+    return translated.text
+    
 def predict(cap_col):
     captions = []
     pred_caption = generate_caption('tmp.jpg', caption_model)
