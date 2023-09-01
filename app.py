@@ -167,7 +167,7 @@ def main():
                               # Update the caption in the database
 
                             
-        os.remove('tmp.jpg')
+        
                 
     else:
         st.write("Please login to access this feature.")
