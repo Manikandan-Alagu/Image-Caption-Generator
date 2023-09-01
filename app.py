@@ -64,8 +64,7 @@ def signup_section():
                                (new_username, new_password, new_email, role))
             st.success(SIGNUP_SUCCESS_MSG)
             st.balloons()
-            # After successful signup, direct the user to the login page
-            login_section()
+            
         except sqlite3.IntegrityError:
             st.error(SIGNUP_ERROR_EXISTING_USER)
 
@@ -92,8 +91,6 @@ def login_section():
                 st.session_state.username = username
                 st.session_state.selected_tab = "Generate Caption"
                 st.balloons()
-                # After successful login, direct the user to the image caption prediction function
-                generate_caption_section()
             else:
                 st.error(LOGIN_ERROR_INVALID_CREDENTIALS)
         except sqlite3.OperationalError as e:
