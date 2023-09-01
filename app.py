@@ -162,7 +162,7 @@ def main():
     tabs = ["Signup", "Login", "Generate Caption"]
 
     # Select the active tab based on user input
-    selected_tab = st.sidebar.selectbox("Navigation", tabs)
+    selected_tab = st.selectbox("Navigation", tabs)
 
     # Route to the appropriate section based on the selected tab
     if selected_tab == "Signup":
