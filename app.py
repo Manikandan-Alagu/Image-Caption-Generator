@@ -18,6 +18,10 @@ def get_model():
 
 caption_model = get_model()
 
+def translate_caption(caption, target_language='en'):
+    translated = translator.translate(caption, dest=target_language)
+    return translated.text
+
 # Constants
 SIGNUP_SUCCESS_MSG = "Signup successful! You can now login."
 SIGNUP_ERROR_EXISTING_USER = "Username already exists. Please choose a different username."
