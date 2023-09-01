@@ -18,8 +18,6 @@ def get_model():
 
 caption_model = get_model()
 
-
-
 # Constants
 SIGNUP_SUCCESS_MSG = "Signup successful! You can now login."
 SIGNUP_ERROR_EXISTING_USER = "Username already exists. Please choose a different username."
@@ -44,12 +42,10 @@ def create_table():
                 role TEXT NOT NULL
             )
         ''')
-        
+
 # Function for signup section
 def signup_section():
-
     st.markdown(f"<p style='{heading_style}'>Signup</p>", unsafe_allow_html=True)
-
     new_username = st.text_input("New Username", key="new_username", help="Choose a unique username")
     new_password = st.text_input("New Password", type="password", key="new_password",  help="Password should be at least 8 characters long")
     new_email = st.text_input("Email", key="new_email", help="Enter a valid email address")
@@ -68,12 +64,13 @@ def signup_section():
                                (new_username, new_password, new_email, role))
             st.success(SIGNUP_SUCCESS_MSG)
             st.balloons()
+            # After successful signup, direct the user to the login page
+            login_section()
         except sqlite3.IntegrityError:
             st.error(SIGNUP_ERROR_EXISTING_USER)
 
 # Function for login section
 def login_section():
-    
     st.markdown(f"<p style='{heading_style}'>Login</p>", unsafe_allow_html=True)
     username = st.text_input("Username", key="login_username", help="Enter your username")
     password = st.text_input("Password", type="password", key="login_password",help="Enter your password")
@@ -82,7 +79,7 @@ def login_section():
         if not username or not password:
             st.error("Username and password are required for login.")
             return
-        
+
         try:
             with sqlite3.connect("login.db") as conn:
                 cursor = conn.cursor()
@@ -95,16 +92,17 @@ def login_section():
                 st.session_state.username = username
                 st.session_state.selected_tab = "Generate Caption"
                 st.balloons()
+                # After successful login, direct the user to the image caption prediction function
+                generate_caption_section()
             else:
                 st.error(LOGIN_ERROR_INVALID_CREDENTIALS)
         except sqlite3.OperationalError as e:
-            st.error(f"An error occurred while trying to log in: {e}")            
-        
+            st.error(f"An error occurred while trying to log in: {e}")
 
 def translate_caption(caption, target_language):
     translated = translator.translate(caption, dest=target_language)
     return translated.text
-    
+
 def predict(cap_col):
     captions = []
     pred_caption = generate_caption('tmp.jpg', caption_model)
@@ -118,12 +116,46 @@ def predict(cap_col):
         if pred_caption not in captions:
             translated_caption = translate_caption(pred_caption, target_language)
             captions.append(translated_caption)
-    
+
     cap_col.markdown('<div class="caption-container">', unsafe_allow_html=True)
     for c in captions:
         cap_col.markdown(f'<div class="cap-line" style="color: black; background-color: light grey; padding: 5px; margin-bottom: 5px; font-family: \'Palatino Linotype\', \'Book Antiqua\', Palatino, serif;">{c}</div>', unsafe_allow_html=True)
     cap_col.markdown('</div>', unsafe_allow_html=True)
-    
+
+def generate_caption_section():
+    st.markdown('<h1 style="text-align:center; font-family:Arial; width:fit-content; font-size:3em; color:black; text-shadow: 2px 2px 4px #000000;">IMAGE CAPTION GENERATOR</h1>', unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+
+    # Image URL input
+    img_url = st.text_input(label='Enter Image URL')
+
+    # Image upload input
+    img_upload = st.file_uploader(label='Upload Image', type=['jpg', 'png', 'jpeg'])
+
+    # Language selection dropdown
+    target_language = st.selectbox('Select Target Language', ['en', 'ta', 'hi', 'es', 'fr', 'zh-cn'], index=0)
+
+    # Process image and generate captions
+    if img_url:
+        img = Image.open(requests.get(img_url, stream=True).raw)
+        img = img.convert('RGB')
+        col1.image(img, caption="Input Image", use_column_width=True)
+        img.save('tmp.jpg')
+        predict(col2)
+
+        st.markdown('<center style="opacity: 70%">OR</center>', unsafe_allow_html=True)
+
+    elif img_upload:
+        img = img_upload.read()
+        img = Image.open(io.BytesIO(img))
+        img = img.convert('RGB')
+        col1.image(img, caption="Input Image", use_column_width=True)
+        img.save('tmp.jpg')
+        predict(col2)
+
+    # Remove temporary image file
+    if img_url or img_upload:
+        os.remove('tmp.jpg')
 
 def main():
     # Create the database table if it doesn't exist
@@ -141,42 +173,11 @@ def main():
     elif selected_tab == "Login":
         login_section()
     elif selected_tab == "Generate Caption":
-        st.markdown('<h1 style="text-align:center; font-family:Arial; width:fit-content; font-size:3em; color:black; text-shadow: 2px 2px 4px #000000;">IMAGE CAPTION GENERATOR</h1>', unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
-
-# Image URL input
-        img_url = st.text_input(label='Enter Image URL')
-
-# Image upload input
-        img_upload = st.file_uploader(label='Upload Image', type=['jpg', 'png', 'jpeg'])
-
-# Language selection dropdown
-        target_language = st.selectbox('Select Target Language', ['en', 'ta', 'hi', 'es', 'fr', 'zh-cn'], index=0)
-
-# Process image and generate captions
-        if img_url:
-           img = Image.open(requests.get(img_url, stream=True).raw)
-           img = img.convert('RGB')
-           col1.image(img, caption="Input Image", use_column_width=True)
-           img.save('tmp.jpg')
-           predict(col2)
-
-           st.markdown('<center style="opacity: 70%">OR</center>', unsafe_allow_html=True)
-
-        elif img_upload:
-             img = img_upload.read()
-             img = Image.open(io.BytesIO(img))
-             img = img.convert('RGB')
-             col1.image(img, caption="Input Image", use_column_width=True)
-             img.save('tmp.jpg')
-             predict(col2)
-
-# Remove temporary image file
-        if img_url or img_upload:
-           os.remove('tmp.jpg')
-                        
-    else:
-        st.write("Please login to access this feature.")
+        # Check if the user is logged in before allowing access to the image caption generation
+        if 'username' in st.session_state:
+            generate_caption_section()
+        else:
+            st.write("Please login to access this feature.")
 
 if __name__ == "__main__":
-    main() 
+    main()
