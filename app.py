@@ -158,29 +158,17 @@ def main():
                 img.save('tmp.jpg')
                 predict(col2)
 
-                
+                for lang in selected_languages:
+                    if lang != "en":
+                         translated_caption = translator.translate(edited_caption, src="en", dest=lang)
+                          st.markdown(f"<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>{lang.upper()} Translation:</p>", unsafe_allow_html=True)
+                          st.write(translated_caption.text)
 
-                if "en" in selected_languages:
-                        st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>Edit Caption:</p>", unsafe_allow_html=True)
-                        edited_caption = st.text_area("Edit the caption", value=predict)
+                              # Update the caption in the database
 
-                        if edited_caption:
-                            st.markdown("<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>Edited Caption:</p>", unsafe_allow_html=True)
-                            st.write(edited_caption)
-
-                            for lang in selected_languages:
-                                if lang != "en":
-                                    translated_caption = translator.translate(edited_caption, src="en", dest=lang)
-                                    st.markdown(f"<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>{lang.upper()} Translation:</p>", unsafe_allow_html=True)
-                                    st.write(translated_caption.text)
-
-                            username = st.session_state.username
-                            update_caption(username, edited_caption)  # Update the caption in the database
-
-                            st.success("Caption updated and saved successfully!")
+                            st.success("Caption successfully!")
                             os.remove('tmp.jpg')
-                else:
-                        st.info("Caption editing is only available for English language captions.")
+                
         else:
             st.write("Please login to access this feature.")
 
