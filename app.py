@@ -130,7 +130,7 @@ def generate_caption_section():
     img_upload = st.file_uploader(label='Upload Image', type=['jpg', 'png', 'jpeg'])
 
     # Language selection dropdown
-    target_language = st.selectbox('Select Target Language', ['en', 'ta', 'hi', 'es', 'fr', 'zh-cn'], index=0)
+    target_language = st.selectbox('Select Target Language', ['en', 'ta', 'hi', 'es', 'fr', 'zh-cn', 'ko'], index=0)
 
     # Process image and generate captions
     if img_url:
