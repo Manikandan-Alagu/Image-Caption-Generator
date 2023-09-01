@@ -96,11 +96,11 @@ def login_section():
         except sqlite3.OperationalError as e:
             st.error(f"An error occurred while trying to log in: {e}")
 
-def translate_caption(caption, target_language):
+def translate_caption(caption, target_language="en"):
     translated = translator.translate(caption, dest=target_language)
     return translated.text
 
-def predict(cap_col):
+def predict(cap_col, target_language):
     captions = []
     pred_caption = generate_caption('tmp.jpg', caption_model)
 
@@ -138,7 +138,7 @@ def generate_caption_section():
         img = img.convert('RGB')
         col1.image(img, caption="Input Image", use_column_width=True)
         img.save('tmp.jpg')
-        predict(col2)
+        predict(col2, target_language)
 
         st.markdown('<center style="opacity: 70%">OR</center>', unsafe_allow_html=True)
 
@@ -148,7 +148,7 @@ def generate_caption_section():
         img = img.convert('RGB')
         col1.image(img, caption="Input Image", use_column_width=True)
         img.save('tmp.jpg')
-        predict(col2)
+        predict(col2, target_language)
 
     # Remove temporary image file
     if img_url or img_upload:
