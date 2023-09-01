@@ -169,8 +169,8 @@ def main():
                             
         os.remove('tmp.jpg')
                 
-        else:
-            st.write("Please login to access this feature.")
+    else:
+        st.write("Please login to access this feature.")
 
     
             
