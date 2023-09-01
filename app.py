@@ -100,22 +100,58 @@ def login_section():
         
 
 
-def predict(cap_col):
+def predict():
     captions = []
     pred_caption = generate_caption('tmp.jpg', caption_model)
 
     cap_col.markdown('#### Predicted Captions:')
-    captions.append(pred_caption)
+    translated_caption = translate_caption(pred_caption, target_language)
+    captions.append(translated_caption)
 
     for _ in range(4):
         pred_caption = generate_caption('tmp.jpg', caption_model, add_noise=True)
         if pred_caption not in captions:
-            captions.append(pred_caption)
+            translated_caption = translate_caption(pred_caption, target_language)
+            captions.append(translated_caption)
     
     cap_col.markdown('<div class="caption-container">', unsafe_allow_html=True)
     for c in captions:
         cap_col.markdown(f'<div class="cap-line" style="color: black; background-color: light grey; padding: 5px; margin-bottom: 5px; font-family: \'Palatino Linotype\', \'Book Antiqua\', Palatino, serif;">{c}</div>', unsafe_allow_html=True)
     cap_col.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown('<h1 style="text-align:center; font-family:Arial; width:fit-content; font-size:3em; color:black; text-shadow: 2px 2px 4px #000000;">IMAGE CAPTION GENERATOR</h1>', unsafe_allow_html=True)
+col1, col2 = st.columns(2)
+
+# Image URL input
+img_url = st.text_input(label='Enter Image URL')
+
+# Image upload input
+img_upload = st.file_uploader(label='Upload Image', type=['jpg', 'png', 'jpeg'])
+
+# Language selection dropdown
+target_language = st.selectbox('Select Target Language', ['en', 'ta', 'hi', 'es', 'fr', 'zh-cn'], index=0)
+
+# Process image and generate captions
+if img_url:
+    img = Image.open(requests.get(img_url, stream=True).raw)
+    img = img.convert('RGB')
+    col1.image(img, caption="Input Image", use_column_width=True)
+    img.save('tmp.jpg')
+    predict(col2)
+
+    st.markdown('<center style="opacity: 70%">OR</center>', unsafe_allow_html=True)
+
+elif img_upload:
+    img = img_upload.read()
+    img = Image.open(io.BytesIO(img))
+    img = img.convert('RGB')
+    col1.image(img, caption="Input Image", use_column_width=True)
+    img.save('tmp.jpg')
+    predict(col2)
+
+# Remove temporary image file
+if img_url or img_upload:
+    os.remove('tmp.jpg')
     
     
 
@@ -135,45 +171,9 @@ def main():
     elif selected_tab == "Login":
         login_section()
     elif selected_tab == "Generate Caption":
-        # Check if a user is logged in before accessing the caption generation feature
-        if hasattr(st.session_state, "username"):
-            st.markdown(f"<p style='{heading_style}'>Generate Caption</p>", unsafe_allow_html=True)
-            st.markdown("Upload an image to generate a caption:")
-
-            with st.sidebar:
-                st.title("Options")
-                selected_languages = st.multiselect("Select languages for translation:", ['en', 'ta', 'hi', 'zh-cn', 'es', 'fr', 'de', 'it', 'ja'])
-                img_url = st.text_input("Enter Image URL:")
-                img_upload = st.file_uploader("Upload Image:", type=['jpg', 'png', 'jpeg'])
-
-            col1, col2 = st.columns(2)
-            if img_url or img_upload:
-                if img_url:
-                    img = Image.open(requests.get(img_url, stream=True).raw)
-                else:
-                    img = Image.open(img_upload)
-
-                img = img.convert('RGB')
-                col1.image(img, caption="Input Image", use_column_width=True)
-                img.save('tmp.jpg')
-                predict(col2)
-
-                for lang in selected_languages:
-                    if lang != "en":
-                         translated_caption = translator.translate(generate_caption, src="en", dest=lang)
-                         st.markdown(f"<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>{lang.upper()} Translation:</p>", unsafe_allow_html=True)
-                         st.write(translated_caption.text)
-
-                              # Update the caption in the database
-
-                            
-        
-                
+        predict()                
     else:
         st.write("Please login to access this feature.")
-
-    
-            
 
 if __name__ == "__main__":
     main() 
