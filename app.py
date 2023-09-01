@@ -161,12 +161,12 @@ def main():
                 for lang in selected_languages:
                     if lang != "en":
                          translated_caption = translator.translate(edited_caption, src="en", dest=lang)
-                          st.markdown(f"<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>{lang.upper()} Translation:</p>", unsafe_allow_html=True)
-                          st.write(translated_caption.text)
+                         st.markdown(f"<p style='font-size: 24px; font-weight: bold; margin-bottom: 20px;'>{lang.upper()} Translation:</p>", unsafe_allow_html=True)
+                         st.write(translated_caption.text)
 
                               # Update the caption in the database
 
-                            st.success("Caption successfully!")
+                            
                             os.remove('tmp.jpg')
                 
         else:
