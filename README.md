@@ -1,5 +1,5 @@
 ---
-title: Image-Caption-Generator
+title: Image-Caption-Generator using streamlit
 emoji: 👁
 colorFrom: green
 colorTo: blue
