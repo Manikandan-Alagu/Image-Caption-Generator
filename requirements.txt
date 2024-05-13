@@ -9,5 +9,5 @@ tensorflow
 altair
 protobuf==3.20
 passlib
-googletrans==4.0.0-rc1
+googletrans
 
